@@ -6,6 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="BFVBasics.cs" />
+    <Compile Remove="BFVBasics2.cs" />
+    <Compile Remove="CKKS.cs" />
+    <Compile Remove="CKKS2.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Research.SEALNet" Version="3.6.1" />
   </ItemGroup>
 
