@@ -90,7 +90,7 @@ namespace HomomorphicEncryption.CustomScheme
 
             for (var i = 0; i < cipher1.Length; i++)
             {
-                sum[i] = (cipher1[i] + cipher1[2]);
+                sum[i] = (cipher1[i] + cipher2[i]) % 2;
             }
 
             return sum;
@@ -102,7 +102,8 @@ namespace HomomorphicEncryption.CustomScheme
 
             for (var i = 0; i < cipher1.Length; i++)
             {
-                product[i] = (cipher1[i] * cipher1[2]) % 2;
+                // THIS DOES NOT WORK.
+                product[i] = (cipher1[i] * cipher2[i]) % 2;
             }
 
             return product;
@@ -132,6 +133,5 @@ namespace HomomorphicEncryption.CustomScheme
         {
             return (Math.Abs(a * b) + a) % b;
         }
-
     }
 }

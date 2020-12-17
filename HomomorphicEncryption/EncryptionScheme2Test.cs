@@ -1,30 +1,23 @@
-﻿using System;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
-using HomomorphicEncryption.Client;
+﻿// -----------------------------------------------------------------------
+//  <copyright company="Microsoft Corporation">
+//       Copyright (C) Microsoft Corporation. All rights reserved.
+//  </copyright>
+// -----------------------------------------------------------------------
+
+using System;
 using HomomorphicEncryption.CustomScheme;
-using ImageProcessor;
 
 namespace HomomorphicEncryption
 {
-    class Program
+    /// <summary>
+    /// 
+    /// </summary>
+    public class EncryptionScheme2Test
     {
-        static void Main(string[] args)
+        public static void CustomEncryptionTest()
         {
-            // Implementation challenges - batch size of image too big
-            // using vectors in CKKS.
-            // lack of branching.
-            Console.WriteLine("Hello World!");
-
-            EncryptionScheme2Test.CustomEncryptionTest();
-            // CustomEncryptionTest();
-        }
-
-        private static void CustomEncryptionTest()
-        {
-            var secret = new int[] { 1, 1, 0, 1, 0, 0, 1, 1 };
-            var scheme = new EncryptionScheme();
+            var secret = 10061;
+            var scheme = new EncryptionScheme2();
 
             Console.WriteLine("###################### Encryption/Decryption Test ######################");
 
@@ -37,7 +30,7 @@ namespace HomomorphicEncryption
                 var decrypted = scheme.Decrypt(ctx, secret);
 
                 Console.WriteLine($"Bit\t{bitToEncrypt}");
-                Console.WriteLine($"Cipher\t{string.Join(',', ctx)}");
+                Console.WriteLine($"Cipher\t{ctx}");
                 Console.WriteLine($"Decrypt\t{decrypted}");
 
                 if (decrypted != bitToEncrypt)
@@ -49,7 +42,7 @@ namespace HomomorphicEncryption
             }
 
             Console.WriteLine("###################### Encrypted Addition Test 1 (1 + 1 = 0) ######################");
-            
+
             for (var i = 0; i < 5; i++)
             {
                 var bit1 = scheme.Encrypt(1, secret);
@@ -151,15 +144,38 @@ namespace HomomorphicEncryption
 
                 Console.WriteLine();
             }
+
+            Console.WriteLine("###################### Encrypted Multiplication Noise Extension Test ######################");
+
+            var done = false;
+
+            // Failed at around 900 comps
+            for (var computations = 1; computations < 1000; computations++)
+            {
+                var ct = scheme.Encrypt(1, secret);
+
+                if (done)
+                {
+                    break;
+                }
+
+                for (var i = 0; i < computations; i++)
+                {
+                    ct = scheme.AddCiphertext(ct, scheme.Encrypt(1, secret));
+
+                    if (ct < 0) throw new OverflowException($"Computations {i}");
+
+                    // Adding a sequence of ones.
+                    if (scheme.Decrypt(ct, secret) != (i % 2 == 0 ? 0 : 1))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine($"Error too high at {i} computations");
+                        Console.ResetColor();
+                        done = true;
+                        break;
+                    }
+                }
             }
-
-        private static void HomomorphicEncryptionTest()
-        {
-            var client = new ImageProcessorClient();
-
-            client.ConvertImageToGrayScale(
-                @"C:\Users\sahalim\Downloads\adventure-time.png",
-                @"C:\Users\sahalim\Downloads\adventure-time-homomorphic-grayscale.png");
         }
     }
 }
